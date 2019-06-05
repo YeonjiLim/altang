@@ -1,76 +1,86 @@
 #include<iostream>
-#include<queue>
 #include<vector>
 #include<tuple>
+#include<algorithm>
+#include<queue>
 using namespace std;
 int dy[] = { -1,1,0,0 };
 int dx[] = { 0,0,-1,1 };
-
-bool bfs(vector<vector<int>> &a, int l, int r) {
+tuple<int, int, int>bfs(vector<vector<int>> &a, int y, int x, int size) {
 	int n = a.size();
-	bool ans = false;
-	vector<vector<bool>> c(n, vector<bool>(n, false));
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			if (!c[i][j]) {
-				c[i][j] = true;
-				queue<pair<int, int>>q;
-				queue<pair<int, int>>q2;
-				q.push(make_pair(i, j));
-				q2.push(make_pair(i, j));
-				int sum = a[i][j];
-				while (!q.empty()) {
-					int y, x;
-					tie(y, x) = q.front();
-					q.pop();
-					for (int k = 0; k < 4; k++) {
-						int ny = y + dy[k];
-						int nx = x + dx[k];
-						if (0 <= ny && ny < n && 0 <= nx && nx < n) {
-							if (!c[ny][nx]) {
-								int diff = a[ny][nx] - a[y][x];
-								if (diff < 0)diff = -diff;
-								if (l <= diff && diff <= r) {
-									c[ny][nx] = true;
-									ans = true;
-									q.push(make_pair(ny, nx));
-									q2.push(make_pair(ny, nx));
-									sum += a[ny][nx];
-								}
-							}
+	vector<vector<int>>d(n, vector<int>(n, -1));
+	vector<tuple<int, int, int>>ans;
+	queue<pair<int, int>>q;
+	q.push(make_pair(y, x));
+	d[y][x] = 0;
+	while (!q.empty()) {
+		int y, x;
+		tie(y, x) = q.front();
+		q.pop();
+		for (int i = 0; i < 4; i++) {
+			int ny = y + dy[i];
+			int nx = x + dx[i];
+			if (0 <= ny && ny < n && 0 <= nx && nx < n) {
+				if (d[ny][nx] == -1) {
+					bool ok = false;
+					bool eat = false;
+					if (a[ny][nx] == 0) {
+						ok = true;
+					}
+					else if (a[ny][nx] == size) {
+						ok = true;
+					}
+					else if (a[ny][nx] < size) {
+						ok = eat = true;
+					}
+					if (ok) {
+						q.push(make_pair(ny, nx));
+						d[ny][nx] = d[y][x] + 1;
+						if (eat) {
+							ans.push_back(make_tuple(d[ny][nx],ny,nx));
 						}
 					}
-				}
-				int val = sum / q2.size();
-				while (!q2.empty()) {
-					int y, x;
-					tie(y, x) = q2.front();
-					q2.pop();
-					a[y][x] = val;
 				}
 			}
 		}
 	}
-
-	return ans;
+	if (ans.empty()) {
+		return make_tuple(-1, -1, -1);
+	}
+	else {
+		sort(ans.begin(), ans.end());
+		return ans[0];
+	}
 }
 int main() {
-	int n, l, r;
-	cin >> n >> l >> r;
-	vector<vector<int>>a(n, vector<int>(n, 0));
+	int n;
+	cin >> n;
+	vector<vector<int>> a(n, vector<int>(n, 0));
+	int y, x;
+	int size = 2;
+	int exp = 0;
+	int ans = 0;
 	for (int i = 0; i < n; i++) {
 		for (int j = 0; j < n; j++) {
 			cin >> a[i][j];
+			if (a[i][j] == 9) {
+				tie(y, x) = make_pair(i, j);
+				a[i][j] = 0;
+			}
 		}
 	}
-	int ans = 0;
 	while (true) {
-		if (bfs(a, l, r)) {
-			ans++;
+		int ny, nx, dist;
+		tie(dist, ny, nx) = bfs(a, y, x, size);
+		if (dist == -1)break;
+		ans += dist;
+		a[ny][nx] = 0;
+		exp++;
+		if (size == exp) {
+			size++;
+			exp = 0;
 		}
-		else {
-			break;
-		}
+		tie(y, x) = make_pair(ny, nx);
 	}
 	cout << ans << endl;
 
