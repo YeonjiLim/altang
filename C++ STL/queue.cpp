@@ -8,7 +8,8 @@
 // 
 // =====================================================================================
 
-#include <bits/stdc++.h>
+#include <iostream>
+//#include <bits/stdc++.h>
 using namespace std;
 
 template <class T>
@@ -56,3 +57,14 @@ public:
 		return _size;
 	}
 };
+
+
+
+// 06.10 PSH
+int main() {
+	_queue<int> q;
+	//_queue<int> *q = new _queue<int>();
+	q.push(2);
+	cout << q.front();
+	q.pop();
+}
